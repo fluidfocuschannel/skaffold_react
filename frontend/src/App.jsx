@@ -13,9 +13,14 @@ function App() {
   }, [])
 
   async function fetchTodos() {
-    const res = await fetch(API_URL)
-    const data = await res.json()
-    setTodos(data)
+    try {
+      const res = await fetch(API_URL)
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
+      const data = await res.json()
+      setTodos(data)
+    } catch (error) {
+      console.error('Failed to fetch todos:', error)
+    }
   }
 
   async function addTodo(e) {
@@ -23,19 +28,31 @@ function App() {
     const text = input.trim()
     if (!text) return
 
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
-    })
-    const newTodo = await res.json()
-    setTodos((prev) => [...prev, newTodo])
-    setInput('')
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      })
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
+      const newTodo = await res.json()
+      setTodos((prev) => [...prev, newTodo])
+      setInput('')
+    } catch (error) {
+      console.error('Failed to add todo:', error)
+      alert('Failed to add todo. Check console for details.')
+    }
   }
 
   async function removeTodo(id) {
-    await fetch(`${API_URL}/${id}`, { method: 'DELETE' })
-    setTodos((prev) => prev.filter((t) => t.id !== id))
+    try {
+      const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
+      setTodos((prev) => prev.filter((t) => t.id !== id))
+    } catch (error) {
+      console.error('Failed to remove todo:', error)
+      alert('Failed to remove todo. Check console for details.')
+    }
   }
 
   return (
